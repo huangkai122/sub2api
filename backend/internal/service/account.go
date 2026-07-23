@@ -237,8 +237,16 @@ func (a *Account) IsGrokOAuth() bool {
 	return a.IsGrok() && a.Type == AccountTypeOAuth
 }
 
+func (a *Account) IsQwen() bool {
+	return a.Platform == PlatformQwen
+}
+
+func (a *Account) IsQwenAPIKey() bool {
+	return a.IsQwen() && a.Type == AccountTypeAPIKey
+}
+
 func (a *Account) IsOpenAICompatible() bool {
-	return a != nil && (a.Platform == PlatformOpenAI || a.Platform == PlatformGrok)
+	return a != nil && (a.Platform == PlatformOpenAI || a.Platform == PlatformGrok || a.Platform == PlatformQwen)
 }
 
 func (a *Account) GeminiOAuthType() string {
@@ -1225,7 +1233,7 @@ func (a *Account) IsOpenAIApiKey() bool {
 }
 
 func (a *Account) GetOpenAIBaseURL() string {
-	if !a.IsOpenAI() {
+	if !a.IsOpenAI() && !a.IsQwen() {
 		return ""
 	}
 	if a.Type == AccountTypeAPIKey {
@@ -1233,6 +1241,9 @@ func (a *Account) GetOpenAIBaseURL() string {
 		if baseURL != "" {
 			return baseURL
 		}
+	}
+	if a.IsQwen() {
+		return "https://token-plan.cn-beijing.maas.aliyuncs.com/compatible-mode/v1"
 	}
 	return "https://api.openai.com"
 }

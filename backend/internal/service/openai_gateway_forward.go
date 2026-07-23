@@ -348,7 +348,7 @@ func (s *OpenAIGatewayService) Forward(ctx context.Context, c *gin.Context, acco
 		maxOutputTokens := gjson.GetBytes(body, "max_output_tokens")
 		if maxOutputTokens.Exists() {
 			switch account.Platform {
-			case PlatformOpenAI:
+			case PlatformOpenAI, PlatformQwen:
 				if account.Type == AccountTypeAPIKey {
 					markPatchDelete("max_output_tokens")
 				}

@@ -114,6 +114,8 @@ func defaultModelsListCandidateIDs(platform string) []string {
 		return ids
 	case PlatformGrok:
 		return xai.DefaultModelIDs()
+	case PlatformQwen:
+		return []string{"qwen-plus", "qwen-max", "qwen-turbo", "qwen-flash", "qwen-long", "qwen3-coder-plus", "qwen3-coder-flash", "qwen-vl-plus", "qwen-vl-max"}
 	default:
 		ids := make([]string, 0, len(claude.DefaultModels))
 		for _, model := range claude.DefaultModels {

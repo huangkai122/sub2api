@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir *)",
+      "Bash(node *)",
+      "Bash(nvmd *)",
+      "Bash(corepack *)",
+      "Bash(mkdir *)",
+      "Bash(mklink *)",
+      "Bash(ren *)",
+      "Bash(reg *)",
+      "Bash(select-string *)",
+      "Bash(select-object *)"
+    ]
+  },
+  "$version": 4
+}

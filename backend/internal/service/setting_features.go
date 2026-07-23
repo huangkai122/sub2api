@@ -454,6 +454,9 @@ func (s *SettingService) GetFallbackModel(ctx context.Context, platform string) 
 	case PlatformAntigravity:
 		key = SettingKeyFallbackModelAntigravity
 		defaultModel = "gemini-2.5-pro"
+	case PlatformQwen:
+		key = SettingKeyFallbackModelQwen
+		defaultModel = "qwen-plus"
 	default:
 		return ""
 	}

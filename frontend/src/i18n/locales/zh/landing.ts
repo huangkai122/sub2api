@@ -98,9 +98,12 @@ export default {
       description: '一个 API，多种选择',
       supported: '已支持',
       soon: '即将推出',
-      claude: 'Claude',
-      gemini: 'Gemini',
-      antigravity: 'Antigravity',
+      // claude: 'Claude',
+      // gemini: 'Gemini',
+      // antigravity: 'Antigravity',
+      qwen: 'Qwen千问',
+      mimo: '小米Mimo',
+      volcengine: '火山引擎Volcengine',
       more: '更多'
     },
     // CTA 区块
