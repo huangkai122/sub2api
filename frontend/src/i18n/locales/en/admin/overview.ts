@@ -496,6 +496,8 @@ export default {
         usageGemini: 'Usage (Gemini)',
         usageAntigravity: 'Usage (Antigravity)',
         usageQwen: 'Usage (Qwen)',
+        usageMimo: 'Usage (MiMo)',
+        usageArk: 'Usage (Ark)',
         concurrency: 'Concurrency',
         status: 'Status',
         lastActive: 'Last Active',
@@ -894,6 +896,8 @@ export default {
         antigravity: 'Antigravity',
         grok: 'Grok',
         qwen: 'Qwen',
+        mimo: 'MiMo',
+        ark: 'Ark',
       },
       deleteConfirm:
         "Are you sure you want to delete '{name}'? All associated API keys will no longer belong to any group.",

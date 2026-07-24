@@ -506,6 +506,7 @@ export default {
         apiModeResponsesHint: '使用 /v1/responses，默认带 instructions + input；适合本站自检/Codex。',
         endpoint: '上游地址',
         endpointPlaceholder: 'https://api.example.com',
+        endpointHint: '可填完整 base URL（如 https://ark.cn-beijing.volces.com/api/plan/v3）；只填域名时使用平台默认路径',
         useCurrentDomain: '使用当前服务',
         apiKey: 'API Key',
         apiKeyPlaceholder: '请输入 API Key',

@@ -45,7 +45,11 @@
                       ? 'https://api.x.ai/v1'
                       : account.platform === 'qwen'
                         ? 'https://token-plan.cn-beijing.maas.aliyuncs.com/compatible-mode/v1'
-                        : 'https://api.anthropic.com'
+                        : account.platform === 'mimo'
+                          ? 'https://token-plan-cn.xiaomimimo.com/v1'
+                          : account.platform === 'ark'
+                            ? 'https://ark.cn-beijing.volces.com/api/plan/v3'
+                            : 'https://api.anthropic.com'
             "
           />
           <p v-if="baseUrlHint" class="input-hint">{{ baseUrlHint }}</p>
@@ -71,7 +75,11 @@
                       ? 'xai-...'
                       : account.platform === 'qwen'
                         ? 'sk-sp-...'
-                        : 'sk-ant-...'
+                        : account.platform === 'mimo'
+                          ? 'tp-...'
+                          : account.platform === 'ark'
+                            ? 'ark-...'
+                            : 'sk-ant-...'
             "
           />
           <p class="input-hint">{{ t('admin.accounts.leaveEmptyToKeep') }}</p>
@@ -2604,6 +2612,8 @@ const baseUrlHint = computed(() => {
   if (props.account.platform === 'gemini') return t('admin.accounts.gemini.baseUrlHint')
   if (props.account.platform === 'grok') return ''
   if (props.account.platform === 'qwen') return 'Token Plan: https://token-plan.cn-beijing.maas.aliyuncs.com/compatible-mode/v1'
+  if (props.account.platform === 'mimo') return 'MiMo: https://token-plan-cn.xiaomimimo.com/v1'
+  if (props.account.platform === 'ark') return 'Ark: https://ark.cn-beijing.volces.com/api/plan/v3'
   return t('admin.accounts.baseUrlHint')
 })
 
@@ -3055,6 +3065,8 @@ const defaultBaseUrl = computed(() => {
   if (props.account?.platform === 'gemini') return 'https://generativelanguage.googleapis.com'
   if (props.account?.platform === 'grok') return 'https://api.x.ai/v1'
   if (props.account?.platform === 'qwen') return 'https://token-plan.cn-beijing.maas.aliyuncs.com/compatible-mode/v1'
+  if (props.account?.platform === 'mimo') return 'https://token-plan-cn.xiaomimimo.com/v1'
+  if (props.account?.platform === 'ark') return 'https://ark.cn-beijing.volces.com/api/plan/v3'
   return 'https://api.anthropic.com'
 })
 
@@ -3351,7 +3363,11 @@ const syncFormFromAccount = (newAccount: Account | null) => {
             ? 'https://api.x.ai/v1'
             : newAccount.platform === 'qwen'
               ? 'https://token-plan.cn-beijing.maas.aliyuncs.com/compatible-mode/v1'
-              : 'https://api.anthropic.com'
+              : newAccount.platform === 'mimo'
+                ? 'https://token-plan-cn.xiaomimimo.com/v1'
+                : newAccount.platform === 'ark'
+                  ? 'https://ark.cn-beijing.volces.com/api/plan/v3'
+                  : 'https://api.anthropic.com'
     editBaseUrl.value = (credentials.base_url as string) || platformDefaultUrl
 
     // Load model mappings and detect mode
@@ -3431,7 +3447,11 @@ const syncFormFromAccount = (newAccount: Account | null) => {
             ? 'https://api.x.ai/v1'
             : newAccount.platform === 'qwen'
               ? 'https://token-plan.cn-beijing.maas.aliyuncs.com/compatible-mode/v1'
-              : 'https://api.anthropic.com'
+              : newAccount.platform === 'mimo'
+                ? 'https://token-plan-cn.xiaomimimo.com/v1'
+                : newAccount.platform === 'ark'
+                  ? 'https://ark.cn-beijing.volces.com/api/plan/v3'
+                  : 'https://api.anthropic.com'
     editBaseUrl.value = platformDefaultUrl
 
     // Load model mappings for OpenAI/Grok OAuth accounts

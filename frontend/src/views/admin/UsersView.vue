@@ -551,6 +551,14 @@
             <PlatformCostCell :usage="getPlatformUsage(row.id, 'qwen')" />
           </template>
 
+          <template #cell-usage_mimo="{ row }">
+            <PlatformCostCell :usage="getPlatformUsage(row.id, 'mimo')" />
+          </template>
+
+          <template #cell-usage_ark="{ row }">
+            <PlatformCostCell :usage="getPlatformUsage(row.id, 'ark')" />
+          </template>
+
           <template #cell-concurrency="{ row }">
             <UserConcurrencyCell
               :current="row.current_concurrency ?? 0"
@@ -859,6 +867,8 @@ const allColumns = computed<Column[]>(() => [
   { key: 'usage_gemini', label: t('admin.users.columns.usageGemini'), sortable: false },
   { key: 'usage_antigravity', label: t('admin.users.columns.usageAntigravity'), sortable: false },
   { key: 'usage_qwen', label: t('admin.users.columns.usageQwen'), sortable: false },
+  { key: 'usage_mimo', label: t('admin.users.columns.usageMimo'), sortable: false },
+  { key: 'usage_ark', label: t('admin.users.columns.usageArk'), sortable: false },
   { key: 'concurrency', label: t('admin.users.columns.concurrency'), sortable: true },
   { key: 'status', label: t('admin.users.columns.status'), sortable: true },
   { key: 'last_active_at', label: t('admin.users.columns.lastActive'), sortable: true },
@@ -879,7 +889,7 @@ const hiddenColumns = reactive<Set<string>>(new Set())
 // Default hidden columns (columns hidden by default on first load)
 const DEFAULT_HIDDEN_COLUMNS = [
   'notes', 'groups', 'subscriptions', 'usage', 'concurrency',
-  'usage_anthropic', 'usage_openai', 'usage_gemini', 'usage_antigravity', 'usage_qwen',
+  'usage_anthropic', 'usage_openai', 'usage_gemini', 'usage_antigravity', 'usage_qwen', 'usage_mimo', 'usage_ark',
   'balance_platform_quota'
 ]
 const REMOVED_COLUMNS = new Set(['last_login_at'])
@@ -893,11 +903,13 @@ const HIDDEN_COLUMNS_KEY = 'user-hidden-columns'
 // 并在 VERSION_NEW_HIDDEN_COLUMNS 中登记该版本新增的 key。
 // 这样老用户升级后这些新列会被自动隐藏一次，而不会影响他们对其它老列的偏好。
 const COLUMN_SETTINGS_VERSION_KEY = 'user-column-settings-version'
-const COLUMN_SETTINGS_VERSION = 4
+const COLUMN_SETTINGS_VERSION = 6
 const VERSION_NEW_HIDDEN_COLUMNS: Record<number, string[]> = {
   2: ['usage_anthropic', 'usage_openai', 'usage_gemini', 'usage_antigravity'],
   3: ['balance_platform_quota'],
-  4: ['usage_qwen']
+  4: ['usage_qwen'],
+  5: ['usage_mimo'],
+  6: ['usage_ark']
 }
 
 // Load saved column settings
@@ -977,14 +989,16 @@ const isColumnVisible = (key: string) => !hiddenColumns.has(key)
 // 列 key → 平台名（'usage' 主列汇总所有平台时为 null）
 // 显式数组取代 Object.keys()：保证迭代顺序（决定列头排序按钮渲染顺序）
 // 不会因 JS 引擎差异或 USAGE_COLUMN_PLATFORMS 属性顺序调整而静默变化。
-const USAGE_COLUMN_KEYS: readonly string[] = ['usage', 'usage_anthropic', 'usage_openai', 'usage_gemini', 'usage_antigravity', 'usage_qwen']
+const USAGE_COLUMN_KEYS: readonly string[] = ['usage', 'usage_anthropic', 'usage_openai', 'usage_gemini', 'usage_antigravity', 'usage_qwen', 'usage_mimo', 'usage_ark']
 const USAGE_COLUMN_PLATFORMS: Record<string, string | null> = {
   usage: null,
   usage_anthropic: 'anthropic',
   usage_openai: 'openai',
   usage_gemini: 'gemini',
   usage_antigravity: 'antigravity',
-  usage_qwen: 'qwen'
+  usage_qwen: 'qwen',
+  usage_mimo: 'mimo',
+  usage_ark: 'ark'
 }
 const PLATFORM_USAGE_COLUMNS = USAGE_COLUMN_KEYS.filter((k) => k !== 'usage')
 const hasVisibleUsageColumn = computed(

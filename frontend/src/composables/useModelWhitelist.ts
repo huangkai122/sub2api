@@ -441,6 +441,8 @@ export function getPresetMappingsByPlatform(platform: string) {
   if (platform === 'antigravity') return antigravityPresetMappings
   if (platform === 'bedrock') return bedrockPresetMappings
   if (platform === 'qwen') return []
+  if (platform === 'mimo') return []
+  if (platform === 'ark') return []
   return anthropicPresetMappings
 }
 

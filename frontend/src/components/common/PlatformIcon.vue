@@ -29,6 +29,14 @@
   <svg v-else-if="platform === 'qwen'" :class="sizeClass" viewBox="0 0 24 24" fill="currentColor">
     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
   </svg>
+  <!-- MiMo / Xiaomi MiMo logo (stylized M) -->
+  <svg v-else-if="platform === 'mimo'" :class="sizeClass" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M4 18V6h2.5l5.5 8 5.5-8H20v12h-2.5v-7.5L12 17l-5.5-6.5V18H4z"/>
+  </svg>
+  <!-- Ark / Volcengine Ark logo (volcano/flame shape) -->
+  <svg v-else-if="platform === 'ark'" :class="sizeClass" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M12 2L4 20h4l4-10 4 10h4L12 2zm0 5l2.5 6h-5L12 7z"/>
+  </svg>
   <!-- Fallback: generic platform icon -->
   <svg v-else :class="sizeClass" fill="currentColor" viewBox="0 0 24 24">
     <path

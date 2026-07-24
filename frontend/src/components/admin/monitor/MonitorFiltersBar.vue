@@ -70,6 +70,9 @@ import {
   PROVIDER_OPENAI,
   PROVIDER_ANTHROPIC,
   PROVIDER_GEMINI,
+  PROVIDER_QWEN,
+  PROVIDER_MIMO,
+  PROVIDER_ARK,
 } from '@/constants/channelMonitor'
 
 defineProps<{
@@ -94,6 +97,9 @@ const providerFilterOptions = computed(() => [
   { value: PROVIDER_OPENAI, label: t('monitorCommon.providers.openai') },
   { value: PROVIDER_ANTHROPIC, label: t('monitorCommon.providers.anthropic') },
   { value: PROVIDER_GEMINI, label: t('monitorCommon.providers.gemini') },
+  { value: PROVIDER_QWEN, label: t('monitorCommon.providers.qwen') },
+  { value: PROVIDER_MIMO, label: t('monitorCommon.providers.mimo') },
+  { value: PROVIDER_ARK, label: t('monitorCommon.providers.ark') },
 ])
 
 const enabledFilterOptions = computed(() => [

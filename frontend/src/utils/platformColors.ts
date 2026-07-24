@@ -5,7 +5,7 @@
  * instead of defining their own color mappings.
  */
 
-export type Platform = 'anthropic' | 'openai' | 'antigravity' | 'gemini' | 'grok' | 'qwen'
+export type Platform = 'anthropic' | 'openai' | 'antigravity' | 'gemini' | 'grok' | 'qwen' | 'mimo' | 'ark'
 
 // ── Badge (bg + text + border, for inline badges with border) ───────
 const BADGE: Record<Platform, string> = {
@@ -15,6 +15,8 @@ const BADGE: Record<Platform, string> = {
   gemini: 'bg-blue-500/10 text-blue-600 border-blue-500/30 dark:text-blue-400',
   grok: 'bg-zinc-800/10 text-zinc-800 border-zinc-800/30 dark:bg-zinc-500/10 dark:text-zinc-200 dark:border-zinc-500/30',
   qwen: 'bg-teal-500/10 text-teal-600 border-teal-500/30 dark:text-teal-400',
+  mimo: 'bg-rose-500/10 text-rose-600 border-rose-500/30 dark:text-rose-400',
+  ark: 'bg-indigo-500/10 text-indigo-600 border-indigo-500/30 dark:text-indigo-400',
 }
 const BADGE_DEFAULT = 'bg-slate-500/10 text-slate-600 border-slate-500/30 dark:text-slate-400'
 
@@ -26,6 +28,8 @@ const BADGE_LIGHT: Record<Platform, string> = {
   gemini: 'bg-blue-500/10 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300',
   grok: 'bg-zinc-800/10 text-zinc-800 dark:bg-zinc-500/10 dark:text-zinc-200',
   qwen: 'bg-teal-500/10 text-teal-600 dark:bg-teal-500/10 dark:text-teal-300',
+  mimo: 'bg-rose-500/10 text-rose-600 dark:bg-rose-500/10 dark:text-rose-300',
+  ark: 'bg-indigo-500/10 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-300',
 }
 
 // ── Border ──────────────────────────────────────────────────────────
@@ -36,6 +40,8 @@ const BORDER: Record<Platform, string> = {
   gemini: 'border-blue-500/20 dark:border-blue-500/20',
   grok: 'border-zinc-800/20 dark:border-zinc-500/20',
   qwen: 'border-teal-500/20 dark:border-teal-500/20',
+  mimo: 'border-rose-500/20 dark:border-rose-500/20',
+  ark: 'border-indigo-500/20 dark:border-indigo-500/20',
 }
 const BORDER_DEFAULT = 'border-gray-200 dark:border-dark-700'
 
@@ -47,6 +53,8 @@ const ACCENT_BAR: Record<Platform, string> = {
   gemini: 'bg-gradient-to-r from-blue-400 to-blue-500',
   grok: 'bg-gradient-to-r from-zinc-700 to-zinc-900',
   qwen: 'bg-gradient-to-r from-teal-400 to-teal-500',
+  mimo: 'bg-gradient-to-r from-rose-400 to-rose-500',
+  ark: 'bg-gradient-to-r from-indigo-400 to-indigo-500',
 }
 const ACCENT_BAR_DEFAULT = 'bg-gradient-to-r from-primary-400 to-primary-500'
 
@@ -58,6 +66,8 @@ const TEXT: Record<Platform, string> = {
   gemini: 'text-blue-600 dark:text-blue-400',
   grok: 'text-zinc-800 dark:text-zinc-200',
   qwen: 'text-teal-600 dark:text-teal-400',
+  mimo: 'text-rose-600 dark:text-rose-400',
+  ark: 'text-indigo-600 dark:text-indigo-400',
 }
 const TEXT_DEFAULT = 'text-primary-600 dark:text-primary-400'
 
@@ -69,6 +79,8 @@ const ICON: Record<Platform, string> = {
   gemini: 'text-blue-500 dark:text-blue-400',
   grok: 'text-zinc-800 dark:text-zinc-200',
   qwen: 'text-teal-500 dark:text-teal-400',
+  mimo: 'text-rose-500 dark:text-rose-400',
+  ark: 'text-indigo-500 dark:text-indigo-400',
 }
 const ICON_DEFAULT = 'text-primary-500 dark:text-primary-400'
 
@@ -80,6 +92,8 @@ const BUTTON: Record<Platform, string> = {
   gemini: 'bg-blue-500 text-white hover:bg-blue-600 active:bg-blue-700 dark:bg-blue-500/80 dark:hover:bg-blue-500',
   grok: 'bg-zinc-800 text-white hover:bg-zinc-900 active:bg-black dark:bg-zinc-700 dark:hover:bg-zinc-600',
   qwen: 'bg-teal-500 text-white hover:bg-teal-600 active:bg-teal-700 dark:bg-teal-500/80 dark:hover:bg-teal-500',
+  mimo: 'bg-rose-500 text-white hover:bg-rose-600 active:bg-rose-700 dark:bg-rose-500/80 dark:hover:bg-rose-500',
+  ark: 'bg-indigo-500 text-white hover:bg-indigo-600 active:bg-indigo-700 dark:bg-indigo-500/80 dark:hover:bg-indigo-500',
 }
 const BUTTON_DEFAULT = 'bg-primary-500 text-white hover:bg-primary-600 dark:bg-primary-600 dark:hover:bg-primary-500'
 
@@ -91,6 +105,8 @@ const DISCOUNT: Record<Platform, string> = {
   gemini: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
   grok: 'bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200',
   qwen: 'bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-300',
+  mimo: 'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300',
+  ark: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300',
 }
 const DISCOUNT_DEFAULT = 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300'
 
@@ -102,6 +118,8 @@ const GRADIENT: Record<Platform, string> = {
   gemini: 'from-blue-500 to-blue-600',
   grok: 'from-zinc-700 to-zinc-900',
   qwen: 'from-teal-500 to-teal-600',
+  mimo: 'from-rose-500 to-rose-600',
+  ark: 'from-indigo-500 to-indigo-600',
 }
 const GRADIENT_DEFAULT = 'from-primary-500 to-primary-600'
 
@@ -113,6 +131,8 @@ const GRADIENT_TEXT: Record<Platform, string> = {
   gemini: 'text-blue-100',
   grok: 'text-zinc-100',
   qwen: 'text-teal-100',
+  mimo: 'text-rose-100',
+  ark: 'text-indigo-100',
 }
 const GRADIENT_TEXT_DEFAULT = 'text-primary-100'
 
@@ -123,13 +143,15 @@ const GRADIENT_SUBTEXT: Record<Platform, string> = {
   gemini: 'text-blue-200',
   grok: 'text-zinc-300',
   qwen: 'text-teal-200',
+  mimo: 'text-rose-200',
+  ark: 'text-indigo-200',
 }
 const GRADIENT_SUBTEXT_DEFAULT = 'text-primary-200'
 
 // ── Public API ──────────────────────────────────────────────────────
 
 function isPlatform(p: string): p is Platform {
-  return p === 'anthropic' || p === 'openai' || p === 'antigravity' || p === 'gemini' || p === 'grok' || p === 'qwen'
+  return p === 'anthropic' || p === 'openai' || p === 'antigravity' || p === 'gemini' || p === 'grok' || p === 'qwen' || p === 'mimo' || p === 'ark'
 }
 
 export function platformBadgeClass(p: string): string {
@@ -184,6 +206,8 @@ export function platformLabel(p: string): string {
     case 'gemini': return 'Gemini'
     case 'grok': return 'Grok'
     case 'qwen': return 'Qwen'
+    case 'mimo': return 'MiMo'
+    case 'ark': return 'Ark'
     default: return p || 'API'
   }
 }

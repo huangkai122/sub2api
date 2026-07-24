@@ -55,6 +55,7 @@
             {{ t('admin.channelMonitor.form.useCurrentDomain') }}
           </button>
         </div>
+        <p class="mt-1 text-xs text-gray-400">{{ t('admin.channelMonitor.form.endpointHint') }}</p>
       </div>
 
       <div>
@@ -213,6 +214,9 @@ import {
   PROVIDER_OPENAI,
   PROVIDER_ANTHROPIC,
   PROVIDER_GEMINI,
+  PROVIDER_QWEN,
+  PROVIDER_MIMO,
+  PROVIDER_ARK,
   API_MODE_CHAT_COMPLETIONS,
   API_MODE_RESPONSES,
   DEFAULT_INTERVAL_SECONDS,
@@ -396,6 +400,9 @@ const providerOptions = computed<ProviderOption[]>(() => [
   { value: PROVIDER_ANTHROPIC, label: t('monitorCommon.providers.anthropic') },
   { value: PROVIDER_OPENAI, label: t('monitorCommon.providers.openai') },
   { value: PROVIDER_GEMINI, label: t('monitorCommon.providers.gemini') },
+  { value: PROVIDER_QWEN, label: t('monitorCommon.providers.qwen') },
+  { value: PROVIDER_MIMO, label: t('monitorCommon.providers.mimo') },
+  { value: PROVIDER_ARK, label: t('monitorCommon.providers.ark') },
 ])
 
 // Clear api_key whenever provider changes to avoid cross-provider key mismatch.

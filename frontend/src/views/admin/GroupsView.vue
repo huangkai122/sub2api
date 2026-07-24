@@ -3744,6 +3744,8 @@ const platformOptions = computed(() => [
   { value: "antigravity", label: "Antigravity" },
   { value: "grok", label: "Grok" },
   { value: "qwen", label: "Qwen" },
+  { value: "mimo", label: "MiMo" },
+  { value: "ark", label: "Ark" },
 ]);
 
 const platformFilterOptions = computed(() => [
@@ -3754,6 +3756,8 @@ const platformFilterOptions = computed(() => [
   { value: "antigravity", label: "Antigravity" },
   { value: "grok", label: "Grok" },
   { value: "qwen", label: "Qwen" },
+  { value: "mimo", label: "MiMo" },
+  { value: "ark", label: "Ark" },
 ]);
 
 const editStatusOptions = computed(() => [

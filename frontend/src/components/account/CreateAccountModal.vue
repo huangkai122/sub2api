@@ -173,6 +173,32 @@
             <PlatformIcon platform="qwen" size="sm" />
             Qwen
           </button>
+          <button
+            type="button"
+            @click="form.platform = 'mimo'"
+            :class="[
+              'flex flex-1 items-center justify-center gap-2 rounded-md px-4 py-2.5 text-sm font-medium transition-all',
+              form.platform === 'mimo'
+                ? 'bg-white text-rose-700 shadow-sm dark:bg-dark-600 dark:text-rose-300'
+                : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200'
+            ]"
+          >
+            <PlatformIcon platform="mimo" size="sm" />
+            MiMo
+          </button>
+          <button
+            type="button"
+            @click="form.platform = 'ark'"
+            :class="[
+              'flex flex-1 items-center justify-center gap-2 rounded-md px-4 py-2.5 text-sm font-medium transition-all',
+              form.platform === 'ark'
+                ? 'bg-white text-indigo-700 shadow-sm dark:bg-dark-600 dark:text-indigo-300'
+                : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200'
+            ]"
+          >
+            <PlatformIcon platform="ark" size="sm" />
+            Ark
+          </button>
         </div>
       </div>
 
@@ -442,6 +468,52 @@
             <div>
               <span class="block text-sm font-medium text-gray-900 dark:text-white">API Key</span>
               <span class="text-xs text-gray-500 dark:text-gray-400">Token Plan / DashScope API Key</span>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Account Type Selection (MiMo) - API Key only -->
+      <div v-if="form.platform === 'mimo'">
+        <label class="input-label">{{ t('admin.accounts.accountType') }}</label>
+        <div class="mt-2 grid grid-cols-1 gap-3" data-tour="account-form-type">
+          <button
+            type="button"
+            @click="accountCategory = 'apikey'"
+            :class="[
+              'flex items-center gap-3 rounded-lg border-2 p-3 text-left transition-all',
+              'border-rose-500 bg-rose-50 dark:bg-rose-900/20'
+            ]"
+          >
+            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-rose-500 text-white">
+              <Icon name="key" size="sm" />
+            </div>
+            <div>
+              <span class="block text-sm font-medium text-gray-900 dark:text-white">API Key</span>
+              <span class="text-xs text-gray-500 dark:text-gray-400">Xiaomi MiMo API Key</span>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Account Type Selection (Ark) - API Key only -->
+      <div v-if="form.platform === 'ark'">
+        <label class="input-label">{{ t('admin.accounts.accountType') }}</label>
+        <div class="mt-2 grid grid-cols-1 gap-3" data-tour="account-form-type">
+          <button
+            type="button"
+            @click="accountCategory = 'apikey'"
+            :class="[
+              'flex items-center gap-3 rounded-lg border-2 p-3 text-left transition-all',
+              'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20'
+            ]"
+          >
+            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-500 text-white">
+              <Icon name="key" size="sm" />
+            </div>
+            <div>
+              <span class="block text-sm font-medium text-gray-900 dark:text-white">API Key</span>
+              <span class="text-xs text-gray-500 dark:text-gray-400">Volcengine Ark API Key</span>
             </div>
           </button>
         </div>
@@ -4108,7 +4180,11 @@ watch(
             ? 'https://api.x.ai/v1'
             : newPlatform === 'qwen'
               ? 'https://token-plan.cn-beijing.maas.aliyuncs.com/compatible-mode/v1'
-              : 'https://api.anthropic.com'
+              : newPlatform === 'mimo'
+                ? 'https://token-plan-cn.xiaomimimo.com/v1'
+                : newPlatform === 'ark'
+                  ? 'https://ark.cn-beijing.volces.com/api/plan/v3'
+                  : 'https://api.anthropic.com'
     // Clear model-related settings
     allowedModels.value = []
     modelMappings.value = []
@@ -4136,6 +4212,14 @@ watch(
       form.load_factor = null
     }
     if (newPlatform === 'qwen') {
+      accountCategory.value = 'apikey'
+      form.type = 'apikey'
+    }
+    if (newPlatform === 'mimo') {
+      accountCategory.value = 'apikey'
+      form.type = 'apikey'
+    }
+    if (newPlatform === 'ark') {
       accountCategory.value = 'apikey'
       form.type = 'apikey'
     }
