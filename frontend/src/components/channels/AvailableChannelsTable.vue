@@ -148,16 +148,38 @@
 
           <!-- 支持模型 -->
           <td class="align-top px-4 py-3">
-            <div class="flex flex-wrap gap-1">
-              <SupportedModelChip
+            <div class="flex flex-col gap-1">
+              <div
                 v-for="m in section.supported_models"
                 :key="`${section.platform}-${m.name}`"
-                :model="m"
-                :pricing-key-prefix="pricingKeyPrefix"
-                :no-pricing-label="noPricingLabel"
-                :show-platform="false"
-                :platform-hint="section.platform"
-              />
+                class="flex items-center gap-1"
+              >
+                <SupportedModelChip
+                  :model="m"
+                  :pricing-key-prefix="pricingKeyPrefix"
+                  :no-pricing-label="noPricingLabel"
+                  :show-platform="false"
+                  :platform-hint="section.platform"
+                />
+                <button
+                  class="rounded p-0.5 transition-colors hover:bg-gray-100 dark:hover:bg-dark-700"
+                  :class="
+                    copiedModel === `${section.platform}-${m.name}`
+                      ? 'text-green-500'
+                      : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
+                  "
+                  :title="t('common.copy')"
+                  @click="copyModelName(m.name, `${section.platform}-${m.name}`)"
+                >
+                  <Icon
+                    v-if="copiedModel === `${section.platform}-${m.name}`"
+                    name="check"
+                    size="xs"
+                    :stroke-width="2"
+                  />
+                  <Icon v-else name="copy" size="xs" />
+                </button>
+              </div>
               <span v-if="section.supported_models.length === 0" class="text-xs text-gray-400">
                 {{ noModelsLabel }}
               </span>
@@ -170,6 +192,7 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Icon from '@/components/icons/Icon.vue'
 import PlatformIcon from '@/components/common/PlatformIcon.vue'
@@ -179,6 +202,7 @@ import type { UserAvailableChannel, UserAvailableGroup, UserChannelPlatformSecti
 import type { GroupPlatform, SubscriptionType } from '@/types'
 import { platformBadgeClass } from '@/utils/platformColors'
 import { useAppStore } from '@/stores/app'
+import { useClipboard } from '@/composables/useClipboard'
 import { hasPeakRate as groupHasPeakRate, formatPeakRateWindow, serverTimezoneLabel } from '@/utils/peak-rate'
 
 const props = defineProps<{
@@ -214,6 +238,18 @@ function publicGroups(section: UserChannelPlatformSection): UserAvailableGroup[]
 }
 
 const appStore = useAppStore()
+const { copyToClipboard } = useClipboard()
+const copiedModel = ref('')
+
+async function copyModelName(name: string, key: string) {
+  const success = await copyToClipboard(name)
+  if (success) {
+    copiedModel.value = key
+    setTimeout(() => {
+      copiedModel.value = ''
+    }, 2000)
+  }
+}
 
 function hasPeakRate(group: UserAvailableGroup): boolean {
   return groupHasPeakRate(group)
