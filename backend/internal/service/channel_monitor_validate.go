@@ -54,8 +54,9 @@ func validateJitter(jitterSec, intervalSec int) error {
 
 // validateEndpoint 校验 endpoint：
 //   - scheme 强制 https（拒绝 http，避免明文凭证 + 部分 SSRF 利用面）
-//   - 必须为 origin（无 path/query/fragment），防止用户填 https://api.openai.com/v1
-//     导致 joinURL 拼出 /v1/v1/chat/completions
+//   - 允许携带 base path（如 https://host/api/plan/v3，语义与账号 base_url 一致，
+//     checker 只追加协议后缀 /chat/completions 等）；禁止 query/fragment，
+//     防止凭证类参数写进 URL 落库
 //   - hostname 不能是 localhost/metadata 等已知元数据 hostname
 //   - 解析所有 IP，任一落在 loopback/RFC1918/link-local/ULA 段即拒绝（防 SSRF）
 //
@@ -75,9 +76,6 @@ func validateEndpoint(ep string) error {
 	if u.Host == "" {
 		return ErrChannelMonitorInvalidEndpoint
 	}
-	if u.Path != "" && u.Path != "/" {
-		return ErrChannelMonitorEndpointPath
-	}
 	if u.RawQuery != "" || u.Fragment != "" {
 		return ErrChannelMonitorEndpointPath
 	}
@@ -95,8 +93,8 @@ func validateEndpoint(ep string) error {
 	return nil
 }
 
-// normalizeEndpoint 去除前后空白与末尾 `/`，保证存储统一为 origin。
-// validateEndpoint 已确保格式合法（仅 origin），这里只做最终归一化。
+// normalizeEndpoint 去除前后空白与末尾 `/`，保证存储统一（origin 或 base URL）。
+// validateEndpoint 已确保格式合法（https + 无 query/fragment），这里只做最终归一化。
 func normalizeEndpoint(ep string) string {
 	ep = strings.TrimSpace(ep)
 	ep = strings.TrimRight(ep, "/")

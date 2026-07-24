@@ -43,6 +43,8 @@ const (
 	PlatformAntigravity = domain.PlatformAntigravity
 	PlatformGrok        = domain.PlatformGrok
 	PlatformQwen        = domain.PlatformQwen
+	PlatformMimo        = domain.PlatformMimo
+	PlatformArk         = domain.PlatformArk
 )
 
 // AllowedQuotaPlatforms 是允许设置 user × platform quota 的平台列表（单一权威来源）。
@@ -55,6 +57,8 @@ var AllowedQuotaPlatforms = []string{
 	PlatformAntigravity,
 	PlatformGrok,
 	PlatformQwen,
+	PlatformMimo,
+	PlatformArk,
 }
 
 // IsAllowedQuotaPlatform 报告 s 是否为合法的 quota platform 标识。
@@ -320,6 +324,8 @@ const (
 	SettingKeyFallbackModelGemini      = "fallback_model_gemini"
 	SettingKeyFallbackModelAntigravity = "fallback_model_antigravity"
 	SettingKeyFallbackModelQwen        = "fallback_model_qwen"
+	SettingKeyFallbackModelMimo        = "fallback_model_mimo"
+	SettingKeyFallbackModelArk         = "fallback_model_ark"
 
 	// Request identity patch (Claude -> Gemini systemInstruction injection)
 	SettingKeyEnableIdentityPatch = "enable_identity_patch"

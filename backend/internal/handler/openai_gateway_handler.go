@@ -103,6 +103,10 @@ func openAICompatibleRequestPlatform(apiKey *service.APIKey) string {
 			return service.PlatformGrok
 		case service.PlatformQwen:
 			return service.PlatformQwen
+		case service.PlatformMimo:
+			return service.PlatformMimo
+		case service.PlatformArk:
+			return service.PlatformArk
 		}
 	}
 	return service.PlatformOpenAI
@@ -112,7 +116,7 @@ func allowOpenAICompatibleMessagesDispatch(apiKey *service.APIKey) bool {
 	if apiKey == nil || apiKey.Group == nil {
 		return true
 	}
-	if apiKey.Group.Platform == service.PlatformGrok || apiKey.Group.Platform == service.PlatformQwen {
+	if apiKey.Group.Platform == service.PlatformGrok || apiKey.Group.Platform == service.PlatformQwen || apiKey.Group.Platform == service.PlatformMimo || apiKey.Group.Platform == service.PlatformArk {
 		return true
 	}
 	return apiKey.Group.AllowMessagesDispatch

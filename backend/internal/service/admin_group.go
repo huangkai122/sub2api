@@ -116,6 +116,10 @@ func defaultModelsListCandidateIDs(platform string) []string {
 		return xai.DefaultModelIDs()
 	case PlatformQwen:
 		return []string{"qwen-plus", "qwen-max", "qwen-turbo", "qwen-flash", "qwen-long", "qwen3-coder-plus", "qwen3-coder-flash", "qwen-vl-plus", "qwen-vl-max"}
+	case PlatformMimo:
+		return []string{"mimo-v2.5-pro"}
+	case PlatformArk:
+		return []string{"doubao-seed-2.0-pro", "doubao-seed-2.0-lite", "doubao-seed-2.0-code", "doubao-seed-2.0-mini", "doubao-seed-2.1-turbo", "doubao-seed-evolving", "deepseek-v4-pro", "deepseek-v4-flash", "kimi-k3", "kimi-k2.7-code", "kimi-k2.6", "glm-5.2", "minimax-m3", "minimax-m2.7"}
 	default:
 		ids := make([]string, 0, len(claude.DefaultModels))
 		for _, model := range claude.DefaultModels {

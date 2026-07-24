@@ -33,7 +33,7 @@ func RegisterGatewayRoutes(
 
 	isOpenAIResponsesCompatibleGatewayPlatform := func(c *gin.Context) bool {
 		switch getGroupPlatform(c) {
-		case service.PlatformOpenAI, service.PlatformGrok, service.PlatformQwen:
+		case service.PlatformOpenAI, service.PlatformGrok, service.PlatformQwen, service.PlatformMimo, service.PlatformArk:
 			return true
 		default:
 			return false

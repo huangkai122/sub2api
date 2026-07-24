@@ -171,6 +171,12 @@ func normalizeOpenAICompatiblePlatform(platform string) string {
 	if platform == PlatformQwen {
 		return PlatformQwen
 	}
+	if platform == PlatformMimo {
+		return PlatformMimo
+	}
+	if platform == PlatformArk {
+		return PlatformArk
+	}
 	return PlatformOpenAI
 }
 

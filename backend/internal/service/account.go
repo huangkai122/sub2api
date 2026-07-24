@@ -245,8 +245,41 @@ func (a *Account) IsQwenAPIKey() bool {
 	return a.IsQwen() && a.Type == AccountTypeAPIKey
 }
 
+func (a *Account) IsMimo() bool {
+	return a.Platform == PlatformMimo
+}
+
+func (a *Account) IsMimoAPIKey() bool {
+	return a.IsMimo() && a.Type == AccountTypeAPIKey
+}
+
+func (a *Account) IsArk() bool {
+	return a.Platform == PlatformArk
+}
+
+func (a *Account) IsArkAPIKey() bool {
+	return a.IsArk() && a.Type == AccountTypeAPIKey
+}
+
 func (a *Account) IsOpenAICompatible() bool {
-	return a != nil && (a.Platform == PlatformOpenAI || a.Platform == PlatformGrok || a.Platform == PlatformQwen)
+	return a != nil && (a.Platform == PlatformOpenAI || a.Platform == PlatformGrok || a.Platform == PlatformQwen || a.Platform == PlatformMimo || a.Platform == PlatformArk)
+}
+
+// ShouldUseRawChatCompletions reports whether this account's /v1/chat/completions
+// requests should bypass the CC→Responses conversion and go straight to the
+// upstream /v1/chat/completions endpoint.
+//
+// Qwen / Ark / MiMo Token Plan upstreams do not support the Responses API for
+// third-party models (glm, deepseek, kimi, etc.), so they must always use the
+// raw Chat Completions path.
+func (a *Account) ShouldUseRawChatCompletions() bool {
+	if a == nil {
+		return false
+	}
+	if a.Platform == PlatformQwen || a.Platform == PlatformArk || a.Platform == PlatformMimo {
+		return true
+	}
+	return false
 }
 
 func (a *Account) GeminiOAuthType() string {
@@ -1233,7 +1266,7 @@ func (a *Account) IsOpenAIApiKey() bool {
 }
 
 func (a *Account) GetOpenAIBaseURL() string {
-	if !a.IsOpenAI() && !a.IsQwen() {
+	if !a.IsOpenAI() && !a.IsQwen() && !a.IsMimo() && !a.IsArk() {
 		return ""
 	}
 	if a.Type == AccountTypeAPIKey {
@@ -1244,6 +1277,12 @@ func (a *Account) GetOpenAIBaseURL() string {
 	}
 	if a.IsQwen() {
 		return "https://token-plan.cn-beijing.maas.aliyuncs.com/compatible-mode/v1"
+	}
+	if a.IsMimo() {
+		return "https://token-plan-cn.xiaomimimo.com/v1"
+	}
+	if a.IsArk() {
+		return "https://ark.cn-beijing.volces.com/api/plan/v3"
 	}
 	return "https://api.openai.com"
 }

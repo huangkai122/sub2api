@@ -164,6 +164,8 @@ func (s *SettingService) InitializeDefaultSettings(ctx context.Context) error {
 		SettingKeyFallbackModelGemini:      "gemini-2.5-pro",
 		SettingKeyFallbackModelAntigravity: "gemini-2.5-pro",
 		SettingKeyFallbackModelQwen:        "qwen-plus",
+		SettingKeyFallbackModelMimo:        "mimo-v2.5-pro",
+		SettingKeyFallbackModelArk:         "doubao-seed-2.0-pro",
 		// Identity patch defaults
 		SettingKeyEnableIdentityPatch: "true",
 		SettingKeyIdentityPatchPrompt: "",

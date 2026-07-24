@@ -457,6 +457,12 @@ func (s *SettingService) GetFallbackModel(ctx context.Context, platform string) 
 	case PlatformQwen:
 		key = SettingKeyFallbackModelQwen
 		defaultModel = "qwen-plus"
+	case PlatformMimo:
+		key = SettingKeyFallbackModelMimo
+		defaultModel = "mimo-v2.5-pro"
+	case PlatformArk:
+		key = SettingKeyFallbackModelArk
+		defaultModel = "doubao-seed-2.0-pro"
 	default:
 		return ""
 	}

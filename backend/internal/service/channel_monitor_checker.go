@@ -149,7 +149,7 @@ func pingEndpointOrigin(ctx context.Context, endpoint string) *int {
 }
 
 // providerAdapter 描述某个 provider 在 challenge 检测中需要的 4 件事：
-//   - 拼出请求路径（含 model 占位）
+//   - 拼出默认请求路径（含 model 占位）
 //   - 序列化请求体
 //   - 构造鉴权头
 //   - 从响应 JSON 中按 path 提取文本（gjson path）
@@ -160,6 +160,9 @@ type providerAdapter struct {
 	buildBody    func(model, prompt string) ([]byte, error)
 	buildHeaders func(apiKey string) map[string]string
 	textPath     string // gjson 提取响应文本的 path
+	// pathSuffix 当 endpoint 自带 base path（如 https://host/api/plan/v3）时，
+	// 改为只拼接该后缀（如 /chat/completions），与账号 base_url 语义一致。
+	pathSuffix func(model string) string
 }
 
 // providerAdapters 全部已支持的 provider。键值即 MonitorProvider* 字符串。
@@ -182,7 +185,8 @@ var providerAdapters = map[string]providerAdapter{
 				"anthropic-version": monitorAnthropicAPIVersion,
 			}
 		},
-		textPath: "content.0.text",
+		textPath:   "content.0.text",
+		pathSuffix: func(string) string { return "/messages" },
 	},
 	MonitorProviderGemini: {
 		// Gemini 把 model 名写在 URL path 上：/v1beta/models/{model}:generateContent
@@ -199,8 +203,14 @@ var providerAdapters = map[string]providerAdapter{
 		buildHeaders: func(apiKey string) map[string]string {
 			return map[string]string{"x-goog-api-key": apiKey}
 		},
-		textPath: "candidates.0.content.parts.0.text",
+		textPath:   "candidates.0.content.parts.0.text",
+		pathSuffix: func(model string) string { return fmt.Sprintf("/models/%s:generateContent", model) },
 	},
+	// Qwen / MiMo / Ark 均为 OpenAI 兼容协议（Bearer + choices.0.message.content），
+	// 仅默认路径不同；endpoint 自带路径时与 OpenAI 一样改拼 /chat/completions。
+	MonitorProviderQwen: openAICompatibleChatAdapter(providerQwenPath),
+	MonitorProviderMimo: openAICompatibleChatAdapter(providerMimoPath),
+	MonitorProviderArk:  openAICompatibleChatAdapter(providerArkPath),
 }
 
 //nolint:gochecknoglobals // 适配器表是只读静态数据，初始化后不变更。
@@ -217,7 +227,17 @@ var providerOpenAIChatAdapter = providerAdapter{
 	buildHeaders: func(apiKey string) map[string]string {
 		return map[string]string{"Authorization": "Bearer " + apiKey}
 	},
-	textPath: "choices.0.message.content",
+	textPath:   "choices.0.message.content",
+	pathSuffix: func(string) string { return "/chat/completions" },
+}
+
+// openAICompatibleChatAdapter 构造一个 OpenAI 兼容协议的 providerAdapter：
+// 与 providerOpenAIChatAdapter 共享 body/headers/textPath，仅默认路径不同。
+// Qwen（/compatible-mode/v1）、Ark（/api/v3）等平台的官方路径差异由此吸收。
+func openAICompatibleChatAdapter(defaultPath string) providerAdapter {
+	a := providerOpenAIChatAdapter
+	a.buildPath = func(string) string { return defaultPath }
+	return a
 }
 
 //nolint:gochecknoglobals // 适配器表是只读静态数据，初始化后不变更。
@@ -235,7 +255,8 @@ var providerOpenAIResponsesAdapter = providerAdapter{
 	buildHeaders: func(apiKey string) map[string]string {
 		return map[string]string{"Authorization": "Bearer " + apiKey}
 	},
-	textPath: "output.0.content.0.text",
+	textPath:   "output.0.content.0.text",
+	pathSuffix: func(string) string { return "/responses" },
 }
 
 // providerAdapterFor 按 provider + api_mode 选择具体 adapter。
@@ -276,7 +297,7 @@ func callProvider(ctx context.Context, provider, endpoint, apiKey, model, prompt
 		return "", "", 0, err
 	}
 	headers := mergeHeaders(adapter.buildHeaders(apiKey), opts)
-	full := joinURL(endpoint, adapter.buildPath(model))
+	full := resolveRequestURL(endpoint, adapter, model)
 	respBytes, status, err := postRawJSON(ctx, full, body, headers)
 	if err != nil {
 		return "", "", status, err
@@ -409,6 +430,10 @@ var bodyMergeKeyDenyList = map[string]map[string]bool{
 	MonitorProviderOpenAI + ":" + MonitorAPIModeResponses:       {"model": true, "instructions": true, "input": true, "stream": true},
 	MonitorProviderAnthropic:                                    {"model": true, "messages": true},
 	MonitorProviderGemini:                                       {"contents": true},
+	// Qwen / MiMo / Ark 走 OpenAI 兼容 chat body，保护字段与 OpenAI chat_completions 一致。
+	MonitorProviderQwen: {"model": true, "messages": true, "stream": true},
+	MonitorProviderMimo: {"model": true, "messages": true, "stream": true},
+	MonitorProviderArk:  {"model": true, "messages": true, "stream": true},
 }
 
 func checkAPIMode(opts *CheckOptions) string {
@@ -498,6 +523,25 @@ func joinURL(base, path string) string {
 		path = "/" + path
 	}
 	return base + path
+}
+
+// resolveRequestURL 计算一次检测的完整请求 URL。
+//
+// endpoint 语义与账号 base_url 对齐：
+//   - 仅 origin（无路径）：使用 adapter 默认路径（如 OpenAI → /v1/chat/completions）。
+//   - 自带 base path（如 https://host/api/plan/v3）：只追加协议后缀（/chat/completions），
+//     覆盖 token-plan、网关子路径等官方默认路径不适用的场景。
+//   - 路径已以后缀结尾（用户填了完整请求 URL）：原样使用，不再追加。
+func resolveRequestURL(endpoint string, adapter providerAdapter, model string) string {
+	u, err := url.Parse(endpoint)
+	if err != nil || u.Path == "" || u.Path == "/" {
+		return joinURL(endpoint, adapter.buildPath(model))
+	}
+	suffix := adapter.pathSuffix(model)
+	if strings.HasSuffix(strings.TrimRight(u.Path, "/"), suffix) {
+		return endpoint
+	}
+	return joinURL(endpoint, suffix)
 }
 
 // extractOrigin 从一个 endpoint URL 中提取 scheme://host[:port] 部分。

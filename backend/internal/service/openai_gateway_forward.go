@@ -52,7 +52,7 @@ func (s *OpenAIGatewayService) Forward(ctx context.Context, c *gin.Context, acco
 		return s.forwardGrokResponses(ctx, c, account, body, originalModel, reqStream, startTime)
 	}
 
-	if account.Type == AccountTypeAPIKey && !openai_compat.ShouldUseResponsesAPI(account.Extra) {
+	if account.Type == AccountTypeAPIKey && (!openai_compat.ShouldUseResponsesAPI(account.Extra) || account.ShouldUseRawChatCompletions()) {
 		return s.forwardResponsesViaRawChatCompletions(ctx, c, account, body)
 	}
 
@@ -348,7 +348,7 @@ func (s *OpenAIGatewayService) Forward(ctx context.Context, c *gin.Context, acco
 		maxOutputTokens := gjson.GetBytes(body, "max_output_tokens")
 		if maxOutputTokens.Exists() {
 			switch account.Platform {
-			case PlatformOpenAI, PlatformQwen:
+			case PlatformOpenAI, PlatformQwen, PlatformMimo, PlatformArk:
 				if account.Type == AccountTypeAPIKey {
 					markPatchDelete("max_output_tokens")
 				}
@@ -869,7 +869,11 @@ func (s *OpenAIGatewayService) buildUpstreamRequest(ctx context.Context, c *gin.
 	req = req.WithContext(WithHTTPUpstreamProfile(req.Context(), HTTPUpstreamProfileOpenAI))
 
 	// Set authentication header
-	req.Header.Set("authorization", "Bearer "+token)
+	if account.Platform == PlatformMimo {
+		req.Header.Set("api-key", token)
+	} else {
+		req.Header.Set("authorization", "Bearer "+token)
+	}
 
 	// Set headers specific to OAuth accounts (ChatGPT internal API)
 	if account.Type == AccountTypeOAuth {

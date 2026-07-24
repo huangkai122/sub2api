@@ -53,11 +53,20 @@ const (
 	providerAnthropicPath = "/v1/messages"
 	// providerGeminiPathTemplate Gemini generateContent 路径模板（含 model 占位）。
 	providerGeminiPathTemplate = "/v1beta/models/%s:generateContent"
+	// providerQwenPath Qwen（DashScope 兼容模式）Chat Completions 默认路径。
+	providerQwenPath = "/compatible-mode/v1/chat/completions"
+	// providerMimoPath MiMo OpenAI 兼容 Chat Completions 默认路径。
+	providerMimoPath = "/v1/chat/completions"
+	// providerArkPath Ark（火山方舟）Chat Completions 默认路径。
+	providerArkPath = "/api/v3/chat/completions"
 
-	// MonitorProviderOpenAI / Anthropic / Gemini provider 字符串常量（也是 ent enum 的实际值）。
+	// MonitorProviderOpenAI 等 provider 字符串常量（也是 ent enum 的实际值）。
 	MonitorProviderOpenAI    = "openai"
 	MonitorProviderAnthropic = "anthropic"
 	MonitorProviderGemini    = "gemini"
+	MonitorProviderQwen      = "qwen"
+	MonitorProviderMimo      = "mimo"
+	MonitorProviderArk       = "ark"
 
 	// MonitorStatusOperational 等监控状态字符串常量（与 ent enum 一致）。
 	MonitorStatusOperational = "operational"
@@ -112,7 +121,7 @@ var (
 		"CHANNEL_MONITOR_NOT_FOUND", "channel monitor not found",
 	)
 	ErrChannelMonitorInvalidProvider = infraerrors.BadRequest(
-		"CHANNEL_MONITOR_INVALID_PROVIDER", "provider must be one of openai/anthropic/gemini",
+		"CHANNEL_MONITOR_INVALID_PROVIDER", "provider must be one of openai/anthropic/gemini/qwen/mimo/ark",
 	)
 	ErrChannelMonitorInvalidAPIMode = infraerrors.BadRequest(
 		"CHANNEL_MONITOR_INVALID_API_MODE", "api_mode must be chat_completions or responses; responses is only supported for openai",
@@ -133,7 +142,7 @@ var (
 		"CHANNEL_MONITOR_ENDPOINT_SCHEME", "endpoint must use https scheme",
 	)
 	ErrChannelMonitorEndpointPath = infraerrors.BadRequest(
-		"CHANNEL_MONITOR_ENDPOINT_PATH", "endpoint must be base origin only (no path/query/fragment)",
+		"CHANNEL_MONITOR_ENDPOINT_PATH", "endpoint must not contain query or fragment",
 	)
 	ErrChannelMonitorEndpointPrivate = infraerrors.BadRequest(
 		"CHANNEL_MONITOR_ENDPOINT_PRIVATE", "endpoint must be a public host",

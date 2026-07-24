@@ -442,6 +442,12 @@ func (s *AccountService) TestCredentials(ctx context.Context, id int64) error {
 	case PlatformQwen:
 		// Qwen API Key credentials are validated via request-path probes.
 		return nil
+	case PlatformMimo:
+		// MIMO API Key credentials are validated via request-path probes.
+		return nil
+	case PlatformArk:
+		// Ark API Key credentials are validated via request-path probes.
+		return nil
 	default:
 		return fmt.Errorf("unsupported platform: %s", account.Platform)
 	}
