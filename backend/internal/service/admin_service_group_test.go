@@ -251,6 +251,23 @@ func TestAdminService_CreateGroup_DefaultsGrokMediaGenerationEnabled(t *testing.
 	require.True(t, group.AllowImageGeneration)
 }
 
+func TestAdminService_CreateGroup_DefaultsQwenMediaGenerationEnabled(t *testing.T) {
+	repo := &groupRepoStubForAdmin{}
+	svc := &adminServiceImpl{groupRepo: repo}
+
+	group, err := svc.CreateGroup(context.Background(), &CreateGroupInput{
+		Name:           "qwen-media",
+		Description:    "Qwen media group",
+		Platform:       PlatformQwen,
+		RateMultiplier: 1.0,
+	})
+	require.NoError(t, err)
+	require.NotNil(t, group)
+	require.NotNil(t, repo.created)
+	require.True(t, repo.created.AllowImageGeneration)
+	require.True(t, group.AllowImageGeneration)
+}
+
 func TestAdminService_CreateGroup_PreservesNonGrokImageGenerationDisabled(t *testing.T) {
 	repo := &groupRepoStubForAdmin{}
 	svc := &adminServiceImpl{groupRepo: repo}

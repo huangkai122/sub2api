@@ -18,7 +18,13 @@ describe("groups image pricing platform support", () => {
     expect(imagePricingPlatforms.has("grok")).toBe(true);
   });
 
-  it("enables video pricing controls for Grok only", () => {
+  it("includes Qwen image groups and video pricing controls", () => {
+    expect(supportsImagePricingPlatform("qwen")).toBe(true);
+    expect(imagePricingPlatforms.has("qwen")).toBe(true);
+    expect(supportsVideoPricingPlatform("qwen")).toBe(true);
+  });
+
+  it("keeps video pricing controls off for text-only platforms", () => {
     expect(supportsVideoPricingPlatform("grok")).toBe(true);
     expect(supportsVideoPricingPlatform("openai")).toBe(false);
   });

@@ -491,6 +491,12 @@ export default {
       groups: '我可访问的分组',
       supportedModels: '支持模型'
     },
+    modelGroups: {
+      text: '文本生成',
+      image: '图片生成',
+      video: '视频生成',
+      other: '其他'
+    },
     pricing: {
       billingMode: '计费模式',
       billingModeToken: '按 Token',

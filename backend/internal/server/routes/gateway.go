@@ -50,6 +50,8 @@ func RegisterGatewayRoutes(
 			h.OpenAIGateway.GrokImages(c)
 		case service.PlatformArk:
 			h.OpenAIGateway.ArkImages(c)
+		case service.PlatformQwen:
+			h.OpenAIGateway.QwenImages(c)
 		default:
 			service.MarkOpsClientBusinessLimited(c, service.OpsClientBusinessLimitedReasonLocalFeatureGate)
 			c.JSON(http.StatusNotFound, gin.H{
@@ -66,6 +68,8 @@ func RegisterGatewayRoutes(
 			h.OpenAIGateway.GrokVideoGeneration(c)
 		case service.PlatformArk:
 			h.OpenAIGateway.ArkVideoGeneration(c)
+		case service.PlatformQwen:
+			h.OpenAIGateway.QwenVideoGeneration(c)
 		default:
 			service.MarkOpsClientBusinessLimited(c, service.OpsClientBusinessLimitedReasonLocalFeatureGate)
 			c.JSON(http.StatusNotFound, gin.H{
@@ -82,6 +86,8 @@ func RegisterGatewayRoutes(
 			h.OpenAIGateway.GrokVideoStatus(c)
 		case service.PlatformArk:
 			h.OpenAIGateway.ArkVideoStatus(c)
+		case service.PlatformQwen:
+			h.OpenAIGateway.QwenVideoStatus(c)
 		default:
 			service.MarkOpsClientBusinessLimited(c, service.OpsClientBusinessLimitedReasonLocalFeatureGate)
 			c.JSON(http.StatusNotFound, gin.H{

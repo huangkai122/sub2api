@@ -259,7 +259,13 @@ func (s *OpenAIGatewayService) handleArkMediaErrorResponse(
 	requestedModel string,
 ) (*OpenAIForwardResult, error) {
 	body := s.readUpstreamErrorBody(resp)
-	s.handleGrokAccountUpstreamError(ctx, account, resp.StatusCode, resp.Header, body)
+	// Ark 401/403 should not trigger long Grok-style cooldowns.
+	switch resp.StatusCode {
+	case http.StatusUnauthorized:
+		s.tempUnscheduleQwen(ctx, account, 5*time.Minute, "ark credentials unauthorized")
+	case http.StatusForbidden:
+		s.tempUnscheduleQwen(ctx, account, 2*time.Minute, "ark access forbidden")
+	}
 	upstreamMsg := sanitizeUpstreamErrorMessage(strings.TrimSpace(extractUpstreamErrorMessage(body)))
 	if upstreamMsg == "" {
 		upstreamMsg = fmt.Sprintf("Ark upstream returned status %d", resp.StatusCode)

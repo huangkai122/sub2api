@@ -24,3 +24,10 @@
 - 界面"池模式(pool_mode)" ≠ 账号池，它是 OpenAI/APIKey 账号的上游错误重试开关。
 - 调度 = priority + load_factor + concurrency + schedulable + 全局开关 + 分组 model_routing + 粘性会话，无单一下拉。
 - 手册在 `docs/ACCOUNT_POOL_ADMIN_GUIDE_CN.md`。
+
+## 媒体生成转发（images/videos）架构速查
+
+- 对外端点：`POST /v1/images/generations|edits`、`POST /v1/videos/generations`、`GET /v1/videos/:request_id`，在 `backend/internal/server/routes/gateway.go` 按分组平台 switch 分发。
+- 每个平台一对文件：`service/<platform>_media.go` + `handler/<platform>_media.go`（openai_images/grok_media/ark_media/qwen_media）。新平台照 ark 模板抄：handler 里调度/失败切换/池模式重试/分组图片权限/内容审核/计费全通用，只需改 PlatformXxx、ForwardXxxMedia、粘性 hash 前缀。
+- Qwen（2026-07-24）：走 DashScope 原生异步任务（Token Plan `{origin}/api/v1/services/aigc/...` + `X-DashScope-Async: enable`，查询 `/api/v1/tasks/{id}`）。origin 由账号 base_url 提取（剥掉 /compatible-mode/v1）。图片服务端轮询同步返回 OpenAI 格式；视频提交即返回 task_id，客户端查状态。请求体扁平 OpenAI-ish → DashScope {model,input,parameters}，含 input 对象的原生格式直接透传。
+- 分组"允许生图"开关链路：字段 `Group.AllowImageGeneration`，闸口 `GroupAllowsImageGeneration()`；创建默认值在 `admin_group.go` `defaultAllowImageGenerationForPlatform`（grok/ark/qwen 默认 true）；前端显示控制在 `groupsImagePricing.ts` 的 `imagePricingPlatforms`（图片区）和 `supportsVideoPricingPlatform`（视频区）两个集合。新媒体平台要开开关就改这三处。

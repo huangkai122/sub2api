@@ -486,6 +486,12 @@ export default {
       groups: 'Your Accessible Groups',
       supportedModels: 'Supported Models'
     },
+    modelGroups: {
+      text: 'Text Generation',
+      image: 'Image Generation',
+      video: 'Video Generation',
+      other: 'Other'
+    },
     pricing: {
       billingMode: 'Billing Mode',
       billingModeToken: 'Per Token',

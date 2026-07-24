@@ -1,5 +1,5 @@
 <template>
-  <div class="card overflow-hidden">
+  <div class="table-wrapper">
     <table class="w-full table-fixed border-collapse text-sm">
       <thead>
         <tr class="border-b border-gray-100 bg-gray-50/50 text-xs font-medium uppercase tracking-wide text-gray-500 dark:border-dark-700 dark:bg-dark-800/50 dark:text-gray-400">
@@ -146,39 +146,52 @@
             </div>
           </td>
 
-          <!-- 支持模型 -->
+          <!-- 支持模型：按后台渠道定价的计费模式分类——
+               token→文本生成、图片（按次）→图片生成、按次→视频生成、未定价→其他 -->
           <td class="align-top px-4 py-3">
-            <div class="flex flex-col gap-1">
+            <div class="flex flex-col gap-2">
               <div
-                v-for="m in section.supported_models"
-                :key="`${section.platform}-${m.name}`"
-                class="flex items-center gap-1"
+                v-for="category in categorizeSupportedModels(section.supported_models)"
+                :key="category.key"
               >
-                <SupportedModelChip
-                  :model="m"
-                  :pricing-key-prefix="pricingKeyPrefix"
-                  :no-pricing-label="noPricingLabel"
-                  :show-platform="false"
-                  :platform-hint="section.platform"
-                />
-                <button
-                  class="rounded p-0.5 transition-colors hover:bg-gray-100 dark:hover:bg-dark-700"
-                  :class="
-                    copiedModel === `${section.platform}-${m.name}`
-                      ? 'text-green-500'
-                      : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
-                  "
-                  :title="t('common.copy')"
-                  @click="copyModelName(m.name, `${section.platform}-${m.name}`)"
+                <div
+                  class="mb-1 text-[10px] font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500"
                 >
-                  <Icon
-                    v-if="copiedModel === `${section.platform}-${m.name}`"
-                    name="check"
-                    size="xs"
-                    :stroke-width="2"
-                  />
-                  <Icon v-else name="copy" size="xs" />
-                </button>
+                  {{ t(`availableChannels.modelGroups.${category.key}`) }}
+                </div>
+                <div class="flex flex-col gap-1">
+                  <div
+                    v-for="m in category.models"
+                    :key="`${section.platform}-${m.name}`"
+                    class="flex items-center gap-1"
+                  >
+                    <SupportedModelChip
+                      :model="m"
+                      :pricing-key-prefix="pricingKeyPrefix"
+                      :no-pricing-label="noPricingLabel"
+                      :show-platform="false"
+                      :platform-hint="section.platform"
+                    />
+                    <button
+                      class="rounded p-0.5 transition-colors hover:bg-gray-100 dark:hover:bg-dark-700"
+                      :class="
+                        copiedModel === `${section.platform}-${m.name}`
+                          ? 'text-green-500'
+                          : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
+                      "
+                      :title="t('common.copy')"
+                      @click="copyModelName(m.name, `${section.platform}-${m.name}`)"
+                    >
+                      <Icon
+                        v-if="copiedModel === `${section.platform}-${m.name}`"
+                        name="check"
+                        size="xs"
+                        :stroke-width="2"
+                      />
+                      <Icon v-else name="copy" size="xs" />
+                    </button>
+                  </div>
+                </div>
               </div>
               <span v-if="section.supported_models.length === 0" class="text-xs text-gray-400">
                 {{ noModelsLabel }}
@@ -198,6 +211,7 @@ import Icon from '@/components/icons/Icon.vue'
 import PlatformIcon from '@/components/common/PlatformIcon.vue'
 import GroupBadge from '@/components/common/GroupBadge.vue'
 import SupportedModelChip from './SupportedModelChip.vue'
+import { categorizeSupportedModels } from './modelCategory'
 import type { UserAvailableChannel, UserAvailableGroup, UserChannelPlatformSection } from '@/api/channels'
 import type { GroupPlatform, SubscriptionType } from '@/types'
 import { platformBadgeClass } from '@/utils/platformColors'
