@@ -506,6 +506,7 @@ export default {
         apiModeResponsesHint: 'Use /v1/responses with default instructions + input; best for self-check/Codex paths.',
         endpoint: 'Endpoint',
         endpointPlaceholder: 'https://api.example.com',
+        endpointHint: 'Full base URLs are supported (e.g. https://ark.cn-beijing.volces.com/api/plan/v3); platform default path is used for bare origins',
         useCurrentDomain: 'Use current service',
         apiKey: 'API Key',
         apiKeyPlaceholder: 'Enter API Key',
