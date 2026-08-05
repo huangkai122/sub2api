@@ -7,15 +7,7 @@ pnpm build
 cd backend
 go build -tags=embed -ldflags="-s -w" -trimpath -o bin/server ./cmd/server
 
-
-
-# 在 Linux 服务器上
-sudo useradd -r -s /bin/false sub2api
-sudo mkdir -p /opt/sub2api /etc/sub2api
-sudo cp server-linux-amd64 /opt/sub2api/sub2api
-sudo chmod +x /opt/sub2api/sub2api
-sudo chown -R sub2api:sub2api /opt/sub2api
-
+打包输出文件：backend/bin/server
 
 # PowerShell
 cd backend
@@ -25,11 +17,21 @@ $env:GOOS = "linux"
 $env:GOARCH = "amd64"
 go build -tags=embed -ldflags="-s -w" -trimpath -o "bin/server-linux-amd64" ./cmd/server
 
+打包输出文件：backend/bin/server-linux-amd64
+
 
 # 在服务器验证文件
 file server-linux-amd64
 # 找路径
 systemctl show -p ExecStart --value sub2api
+
+# 在 Linux 服务器上
+sudo useradd -r -s /bin/false sub2api
+sudo mkdir -p /opt/sub2api /etc/sub2api
+
+sudo cp server-linux-amd64 /opt/sub2api/sub2api
+sudo chmod +x /opt/sub2api/sub2api
+sudo chown -R sub2api:sub2api /opt/sub2api
 
 
 shell
@@ -51,3 +53,4 @@ ls -lh ./sub2api
 
 # 6. 启动服务
 systemctl start sub2api
+
