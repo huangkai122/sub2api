@@ -89,11 +89,11 @@
               <div class="code-shell">
                 <div class="code-header">
                   <span>cURL</span>
-                  <button type="button" class="copy-button" @click="copyCode(activeCapability.code)">
+                  <button type="button" class="copy-button" @click="copyCode(capabilityCode)">
                     {{ copied ? '已复制' : '复制代码' }}
                   </button>
                 </div>
-                <pre><code>{{ activeCapability.code }}</code></pre>
+                <pre><code>{{ capabilityCode }}</code></pre>
               </div>
 
               <div v-if="activeCapability.statusCode" class="mt-4">
@@ -118,8 +118,26 @@
                   <dd class="mt-1 break-all font-mono text-xs text-gray-800 dark:text-dark-100">{{ activeCapability.endpoint }}</dd>
                 </div>
                 <div>
-                  <dt class="text-xs text-gray-500 dark:text-dark-400">推荐模型</dt>
-                  <dd class="mt-1 font-mono text-xs text-gray-800 dark:text-dark-100">{{ activeCapability.model }}</dd>
+                  <dt class="text-xs text-gray-500 dark:text-dark-400">可用模型</dt>
+                  <dd v-if="availableModels.length === 0" class="mt-1 text-xs leading-5 text-gray-500 dark:text-dark-400">暂无配置的模型</dd>
+                  <ul v-else class="mt-1 space-y-1">
+                    <li
+                      v-for="model in availableModels"
+                      :key="model"
+                      class="model-row"
+                    >
+                      <button
+                        type="button"
+                        class="model-chip"
+                        :class="selectedModel === model ? 'model-chip-active' : ''"
+                        :title="`复制 ${model}`"
+                        @click="selectModel(model)"
+                      >
+                        <span class="truncate font-mono">{{ model }}</span>
+                        <span class="model-copy-label">{{ copiedModel === model ? '已复制' : '复制' }}</span>
+                      </button>
+                    </li>
+                  </ul>
                 </div>
                 <div v-if="activeCapability.note">
                   <dt class="text-xs text-gray-500 dark:text-dark-400">注意</dt>
@@ -135,9 +153,11 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import AppLayout from '@/components/layout/AppLayout.vue'
 import { useAppStore } from '@/stores/app'
+import userChannelsAPI, { type UserSupportedModel } from '@/api/channels'
+import { modelCategoryOf, type ModelCategoryKey } from '@/components/channels/modelCategory'
 
 type PlatformId = 'qwen' | 'mimo' | 'ark'
 type CapabilityId = 'text' | 'image' | 'text-video' | 'image-video'
@@ -148,9 +168,13 @@ interface Capability {
   description: string
   method: 'POST'
   endpoint: string
-  model: string
+  /** 渠道未配置模型时的兜底示例模型。 */
+  defaultModel: string
+  /** 从「可用渠道」模型里取哪一类的模型展示（text/image/video）。 */
+  modelCategory: ModelCategoryKey
   note?: string
-  code: string
+  /** 根据传入的 model 生成示例请求体。 */
+  buildBody: (model: string) => Record<string, unknown>
   statusCode?: string
 }
 
@@ -168,7 +192,11 @@ const appStore = useAppStore()
 const activePlatformId = ref<PlatformId>('qwen')
 const activeCapabilityId = ref<CapabilityId>('text')
 const copied = ref(false)
+const copiedModel = ref('')
+const selectedModel = ref('')
+const channelModels = ref<UserSupportedModel[]>([])
 let copiedTimer: ReturnType<typeof setTimeout> | undefined
+let modelCopiedTimer: ReturnType<typeof setTimeout> | undefined
 
 const apiBase = computed(() => {
   const configured = appStore.apiBaseUrl.trim().replace(/\/$/, '')
@@ -203,9 +231,10 @@ const platforms = computed<PlatformDocs[]>(() => [
         description: '发送对话消息，获取模型回复。',
         method: 'POST',
         endpoint: '/v1/chat/completions',
-        model: 'qwen-plus',
-        code: curl('/v1/chat/completions', {
-          model: 'qwen-plus',
+        defaultModel: 'qwen-plus',
+        modelCategory: 'text',
+        buildBody: (model) => ({
+          model,
           messages: [{ role: 'user', content: '用一句话介绍太原' }],
         }),
       },
@@ -215,10 +244,11 @@ const platforms = computed<PlatformDocs[]>(() => [
         description: '根据文字描述生成图片，成功后直接返回图片地址。',
         method: 'POST',
         endpoint: '/v1/images/generations',
-        model: 'wan2.7-image',
+        defaultModel: 'wan2.7-image',
+        modelCategory: 'image',
         note: 'size 支持 1K、2K、4K 或具体像素尺寸。',
-        code: curl('/v1/images/generations', {
-          model: 'wan2.7-image',
+        buildBody: (model) => ({
+          model,
           prompt: '一只戴墨镜的柴犬，电影海报风格',
           size: '2K',
         }),
@@ -229,10 +259,11 @@ const platforms = computed<PlatformDocs[]>(() => [
         description: '根据文字创建视频任务，再用返回的 request_id 查询结果。',
         method: 'POST',
         endpoint: '/v1/videos/generations',
-        model: 'happyhorse-1.1-t2v',
+        defaultModel: 'happyhorse-1.1-t2v',
+        modelCategory: 'video',
         note: '提交后会返回 request_id；视频为异步任务。',
-        code: curl('/v1/videos/generations', {
-          model: 'happyhorse-1.1-t2v',
+        buildBody: (model) => ({
+          model,
           prompt: '一只小狗在雪地奔跑，电影感镜头',
           resolution: '720P',
           ratio: '16:9',
@@ -246,10 +277,11 @@ const platforms = computed<PlatformDocs[]>(() => [
         description: '提供可公开访问的图片地址，让静态画面动起来。',
         method: 'POST',
         endpoint: '/v1/videos/generations',
-        model: 'wanx2.1-i2v-turbo',
+        defaultModel: 'wanx2.1-i2v-turbo',
+        modelCategory: 'video',
         note: 'img_url 必须是平台上游可访问的 HTTPS 图片地址。',
-        code: curl('/v1/videos/generations', {
-          model: 'wanx2.1-i2v-turbo',
+        buildBody: (model) => ({
+          model,
           prompt: '镜头缓慢推进，人物自然眨眼',
           img_url: 'https://example.com/input.jpg',
           resolution: '720P',
@@ -272,9 +304,10 @@ const platforms = computed<PlatformDocs[]>(() => [
         description: '使用 OpenAI 兼容格式调用 MIMO 文本模型。',
         method: 'POST',
         endpoint: '/v1/chat/completions',
-        model: 'mimo-v2.5-pro',
-        code: curl('/v1/chat/completions', {
-          model: 'mimo-v2.5-pro',
+        defaultModel: 'mimo-v2.5-pro',
+        modelCategory: 'text',
+        buildBody: (model) => ({
+          model,
           messages: [{ role: 'user', content: '解释一下什么是大语言模型' }],
         }),
       },
@@ -294,9 +327,10 @@ const platforms = computed<PlatformDocs[]>(() => [
         description: '发送对话消息，调用方舟上的文本模型。',
         method: 'POST',
         endpoint: '/v1/chat/completions',
-        model: 'doubao-seed-2.0-pro',
-        code: curl('/v1/chat/completions', {
-          model: 'doubao-seed-2.0-pro',
+        defaultModel: 'doubao-seed-2.0-pro',
+        modelCategory: 'text',
+        buildBody: (model) => ({
+          model,
           messages: [{ role: 'user', content: '写一句夏日旅行文案' }],
         }),
       },
@@ -306,10 +340,11 @@ const platforms = computed<PlatformDocs[]>(() => [
         description: '调用方舟图片模型，根据提示词生成图片。',
         method: 'POST',
         endpoint: '/v1/images/generations',
-        model: '以“可用渠道”页面为准',
-        note: '方舟图片模型名称会随渠道配置变化，请复制“可用渠道”中显示的模型名称。',
-        code: curl('/v1/images/generations', {
-          model: 'YOUR_ARK_IMAGE_MODEL',
+        defaultModel: 'YOUR_ARK_IMAGE_MODEL',
+        modelCategory: 'image',
+        note: '方舟图片模型名称会随渠道配置变化，以列表中的可用模型为准。',
+        buildBody: (model) => ({
+          model,
           prompt: '山西古建屋檐，清晨薄雾，国风摄影',
           size: '1024x1024',
         }),
@@ -320,10 +355,11 @@ const platforms = computed<PlatformDocs[]>(() => [
         description: '根据文字创建 Seedance 视频任务。',
         method: 'POST',
         endpoint: '/v1/videos/generations',
-        model: 'doubao-seedance-2.0-fast',
+        defaultModel: 'doubao-seedance-2.0-fast',
+        modelCategory: 'video',
         note: '提交后会返回 request_id；视频为异步任务。',
-        code: curl('/v1/videos/generations', {
-          model: 'doubao-seedance-2.0-fast',
+        buildBody: (model) => ({
+          model,
           prompt: '一只猫在草地上奔跑，阳光明媚，慢动作',
           ratio: '16:9',
           duration: 5,
@@ -336,10 +372,11 @@ const platforms = computed<PlatformDocs[]>(() => [
         description: '以图片作为首帧创建 Seedance 视频任务。',
         method: 'POST',
         endpoint: '/v1/videos/generations',
-        model: 'doubao-seedance-2.0-fast',
+        defaultModel: 'doubao-seedance-2.0-fast',
+        modelCategory: 'video',
         note: 'img_url 必须是平台上游可访问的 HTTPS 图片地址。',
-        code: curl('/v1/videos/generations', {
-          model: 'doubao-seedance-2.0-fast',
+        buildBody: (model) => ({
+          model,
           prompt: '镜头环绕主体，云层缓慢移动',
           img_url: 'https://example.com/input.jpg',
           ratio: '16:9',
@@ -354,10 +391,53 @@ const platforms = computed<PlatformDocs[]>(() => [
 const activePlatform = computed(() => platforms.value.find((item) => item.id === activePlatformId.value) ?? platforms.value[0])
 const activeCapability = computed(() => activePlatform.value.capabilities.find((item) => item.id === activeCapabilityId.value) ?? activePlatform.value.capabilities[0])
 
+/**
+ * 从「可用渠道」取当前平台支持且属于当前能力类型的模型名（去重、保序）。
+ * 渠道接口未返回数据时返回空数组，界面显示「暂无配置的模型」。
+ */
+const availableModels = computed<string[]>(() => {
+  const platformId = activePlatform.value.id
+  const category = activeCapability.value.modelCategory
+  const names: string[] = []
+  const seen = new Set<string>()
+  for (const model of channelModels.value) {
+    if (model.platform !== platformId) continue
+    if (modelCategoryOf(model) !== category) continue
+    const name = model.name.trim()
+    if (name && !seen.has(name)) {
+      seen.add(name)
+      names.push(name)
+    }
+  }
+  return names
+})
+
+/** 示例代码当前使用的模型：优先用户选中的，其次渠道首个可用模型，最后兜底示例模型。 */
+const effectiveModel = computed(() => {
+  if (selectedModel.value && availableModels.value.includes(selectedModel.value)) return selectedModel.value
+  if (availableModels.value.length > 0) return availableModels.value[0]
+  return activeCapability.value.defaultModel
+})
+
+/** 根据当前模型动态生成示例 cURL。 */
+const capabilityCode = computed(() => curl(activeCapability.value.endpoint, activeCapability.value.buildBody(effectiveModel.value)))
+
 function selectPlatform(id: PlatformId) {
   activePlatformId.value = id
   activeCapabilityId.value = 'text'
+  selectedModel.value = ''
   copied.value = false
+  copiedModel.value = ''
+}
+
+function selectModel(model: string) {
+  selectedModel.value = model
+  copiedModel.value = model
+  if (modelCopiedTimer) clearTimeout(modelCopiedTimer)
+  modelCopiedTimer = setTimeout(() => {
+    copiedModel.value = ''
+  }, 1600)
+  void copyCode(model)
 }
 
 async function copyCode(code: string) {
@@ -372,6 +452,24 @@ async function copyCode(code: string) {
     copied.value = false
   }
 }
+
+onMounted(async () => {
+  try {
+    const channels = await userChannelsAPI.getAvailable()
+    const models: UserSupportedModel[] = []
+    for (const channel of channels) {
+      for (const section of channel.platforms) {
+        for (const model of section.supported_models) {
+          models.push({ ...model, platform: section.platform })
+        }
+      }
+    }
+    channelModels.value = models
+  } catch {
+    // 渠道接口不可用时保持空列表，示例回退到 defaultModel。
+    channelModels.value = []
+  }
+})
 </script>
 
 <style scoped>
@@ -407,6 +505,22 @@ async function copyCode(code: string) {
 }
 .copy-button {
   @apply rounded px-2 py-1 text-gray-300 transition-colors hover:bg-white/10 hover:text-white;
+}
+.model-row {
+  @apply flex;
+}
+.model-chip {
+  @apply flex w-full min-w-0 items-center justify-between gap-2 rounded-md border border-gray-200 bg-white px-2 py-1.5 text-left transition-colors hover:border-primary-300 hover:bg-primary-50 dark:border-dark-600 dark:bg-dark-800 dark:hover:border-primary-600 dark:hover:bg-dark-700;
+}
+.model-chip-active {
+  @apply border-primary-400 bg-primary-50 dark:border-primary-500 dark:bg-dark-700;
+}
+.model-copy-label {
+  @apply ml-1 flex-none text-[10px] text-gray-400;
+}
+.model-chip:hover .model-copy-label,
+.model-chip-active .model-copy-label {
+  @apply text-primary-500 dark:text-primary-400;
 }
 pre {
   @apply max-h-[430px] overflow-auto p-4 text-sm leading-6 text-gray-100;
