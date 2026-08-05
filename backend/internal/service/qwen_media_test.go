@@ -34,7 +34,7 @@ func TestQwenMediaEndpointUpstreamURL(t *testing.T) {
 	base := "https://token-plan.cn-beijing.maas.aliyuncs.com/compatible-mode/v1"
 
 	img, err := QwenMediaEndpointImagesGenerations.upstreamURL(base, "")
-	if err != nil || img != "https://token-plan.cn-beijing.maas.aliyuncs.com/api/v1/services/aigc/text2image/image-synthesis" {
+	if err != nil || img != "https://token-plan.cn-beijing.maas.aliyuncs.com/api/v1/services/aigc/multimodal-generation/generation" {
 		t.Fatalf("images url = %q, err = %v", img, err)
 	}
 
@@ -143,11 +143,18 @@ func TestBuildQwenMediaTaskBodyRequiresModel(t *testing.T) {
 
 func TestNormalizeQwenMediaImageSize(t *testing.T) {
 	cases := map[string]string{
+		// Empty defaults to 1K.
+		"": "1024*1024",
+		// Aliases.
+		"1K":        "1024*1024",
+		"2K":        "2048*2048",
+		"4K":        "4096*4096",
 		"1024x1024": "1024*1024",
 		"1024X1024": "1024*1024",
+		"2048x2048": "2048*2048",
+		// Native DashScope sizes pass through untouched.
 		"1024*1024": "1024*1024",
 		"720*1280":  "720*1280",
-		"":          "",
 	}
 	for in, want := range cases {
 		if got := normalizeQwenMediaImageSize(in); got != want {

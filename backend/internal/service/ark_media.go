@@ -153,9 +153,20 @@ func (s *OpenAIGatewayService) ForwardArkMedia(
 
 	requestInfo := ParseArkMediaRequest(body)
 
+	upstreamBody := body
+	if endpoint == ArkMediaEndpointVideosGenerations {
+		converted, convErr := buildArkVideoTaskBody(body)
+		if convErr != nil {
+			MarkResponseCommitted(c)
+			writeArkMediaErrorResponse(c, http.StatusBadRequest, "invalid_request_error", convErr.Error())
+			return nil, fmt.Errorf("ark video request: %w", convErr)
+		}
+		upstreamBody = converted
+	}
+
 	var bodyReader io.Reader
 	if endpoint.RequiresRequestBody() {
-		bodyReader = bytes.NewReader(body)
+		bodyReader = bytes.NewReader(upstreamBody)
 	}
 	upstreamCtx, releaseUpstreamCtx := detachUpstreamContext(ctx)
 	defer releaseUpstreamCtx()
@@ -248,6 +259,72 @@ func extractArkMediaVideoTaskID(body []byte) string {
 		}
 	}
 	return ""
+}
+
+// buildArkVideoTaskBody converts a flat OpenAI-ish video generation request
+// ({"model","prompt","ratio","duration",...}) into the Ark native task shape
+// ({"model","content":[{"type":"text","text":...}],...}).
+//
+// Ark's current API takes generation parameters (ratio/duration/resolution/
+// seed/watermark/camera_fixed/generate_audio...) as top-level fields, so every
+// top-level field other than prompt/img_url/image_url is preserved as-is.
+// Bodies that already carry a non-empty content array pass through untouched.
+func buildArkVideoTaskBody(body []byte) ([]byte, error) {
+	if len(body) == 0 || !gjson.ValidBytes(body) {
+		return nil, fmt.Errorf("invalid request body")
+	}
+	if content := gjson.GetBytes(body, "content"); content.IsArray() && len(content.Array()) > 0 {
+		return body, nil
+	}
+
+	var fields map[string]json.RawMessage
+	if err := json.Unmarshal(body, &fields); err != nil {
+		return nil, fmt.Errorf("invalid request body: %w", err)
+	}
+
+	content := make([]map[string]any, 0, 2)
+	if prompt := strings.TrimSpace(gjson.GetBytes(body, "prompt").String()); prompt != "" {
+		content = append(content, map[string]any{"type": "text", "text": prompt})
+	}
+	delete(fields, "prompt")
+
+	// Image-to-video: accept img_url / image_url either as a plain URL string
+	// or as an {"url": ...} object, and normalize into a content item.
+	imageURL := ""
+	for _, key := range []string{"img_url", "image_url"} {
+		raw, ok := fields[key]
+		if !ok {
+			continue
+		}
+		delete(fields, key)
+		var s string
+		if err := json.Unmarshal(raw, &s); err == nil {
+			imageURL = strings.TrimSpace(s)
+			continue
+		}
+		var obj struct {
+			URL string `json:"url"`
+		}
+		if err := json.Unmarshal(raw, &obj); err == nil {
+			imageURL = strings.TrimSpace(obj.URL)
+		}
+	}
+	if imageURL != "" {
+		content = append(content, map[string]any{
+			"type":      "image_url",
+			"image_url": map[string]any{"url": imageURL},
+		})
+	}
+
+	if len(content) == 0 {
+		return nil, fmt.Errorf("either content or prompt is required")
+	}
+	contentJSON, err := json.Marshal(content)
+	if err != nil {
+		return nil, err
+	}
+	fields["content"] = contentJSON
+	return json.Marshal(fields)
 }
 
 func (s *OpenAIGatewayService) handleArkMediaErrorResponse(

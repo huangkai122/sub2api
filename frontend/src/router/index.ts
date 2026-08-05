@@ -255,6 +255,16 @@ const routes: RouteRecordRaw[] = [
     }
   },
   {
+    path: '/api-docs',
+    name: 'ApiDocs',
+    component: () => import('@/views/user/ApiDocsView.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: false,
+      title: 'API 文档'
+    }
+  },
+  {
     path: '/available-channels',
     name: 'UserAvailableChannels',
     component: () => import('@/views/user/AvailableChannelsView.vue'),
